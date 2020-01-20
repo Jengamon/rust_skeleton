@@ -156,7 +156,7 @@ impl Socket {
                 'T' => ServerAction::SetGameClock(arg.parse::<f32>().expect("Expected float for game clock")),
                 'P' => ServerAction::SetPlayerIndex(arg.parse::<usize>().expect("Expected positive integer for player index")),
                 'H' => {
-                    let cards: Vec<_> = into_cards!(arg).into_iter().map(|x| x.unwrap()).collect();
+                    let cards: Vec<_> = into_cards!(arg).unwrap();
                     assert!(cards.len() == 2, "Server sent too many cards for player hand");
                     ServerAction::SetPlayerHand(CardHand([cards[0], cards[1]]))
                 },
@@ -164,9 +164,9 @@ impl Socket {
                 'C' => ServerAction::PlayCall,
                 'K' => ServerAction::PlayCheck,
                 'R' => ServerAction::PlayRaise(arg.parse::<u32>().expect("Expected positive integer for raise amount")),
-                'B' => ServerAction::UpdateDeck(CardDeck(into_cards!(arg).into_iter().map(|x| x.unwrap()).collect())),
+                'B' => ServerAction::UpdateDeck(CardDeck(into_cards!(arg).unwrap())),
                 'O' => {
-                    let cards: Vec<_> = into_cards!(arg).into_iter().map(|x| x.unwrap()).collect();
+                    let cards: Vec<_> = into_cards!(arg).unwrap();
                     assert!(cards.len() == 2, "Server sent too many cards for player hand");
                     ServerAction::RevealOpponentHand(CardHand([cards[0], cards[1]]))
                 },
