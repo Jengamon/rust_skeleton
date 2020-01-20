@@ -1,0 +1,18 @@
+[package]
+name = "rust_skeleton"
+version = "1.0.0"
+authors = ["Jengamon <bob.hostern@gmail.com>"]
+edition = "2018"
+license = "MIT"
+
+# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+
+[dependencies]
+bitflags = "^1.2"
+approx = "^0.3"
+log = "^0.4"
+itertools = { version = "^0.8", optional = true}
+
+[features]
+default = ["showdown"]
+showdown = ["itertools"]
