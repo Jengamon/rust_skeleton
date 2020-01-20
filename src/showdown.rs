@@ -268,7 +268,7 @@ impl ShowdownEngine {
         })
     }
 
-    // What are the card values that appear in this hand?s
+    // What are the card values that appear in this hand?
     pub fn values<'a, H, C: Borrow<Card>>(hand: H) -> Vec<CardValue> where H: 'a + Iterator<Item = C> {
         hand.map(|c| c.borrow().value()).fold(vec![], |mut acc, val| { if !acc.contains(&val) { acc.push(val)}; acc })
     }
@@ -280,7 +280,7 @@ impl ShowdownEngine {
 
     // Only for consistency checking
     pub fn all_possible_hands(&self, hand: &[Card], straights: bool) -> Vec<PotentialHand> {
-        // Brutely detect all hands, so every 4K will have 3 pairs, every 3K will have 2 pair and so on
+        // Brutely detect all hands, so every 4K will have 3 pairs, every 3K will have 2 pairs and so on
         let (hands, pairs, three_of_a_kind, four_of_a_kind, straights, flushes, straight_flushes) = if straights {
             detect_hands!(self, hand)
         } else {
@@ -361,7 +361,7 @@ impl ShowdownEngine {
 
     // We don't detect high cards, because those are technically not a "potential" hand, but rather when we have no other hands
     // and we might want to react differently if we have potential straights or flushes
-    // Tries to detect the best possible hand for a given set of cards
+    // Tries to detect the best possible hand for a given set of cards, should be faster than all_possible_hands
     pub fn potential_hands(&self, hand: &[Card], straights: bool) -> Vec<PotentialHand> {
         let (hands, pairs, three_of_a_kind, four_of_a_kind, straights, flushes, straight_flushes) = if straights {
             detect_hands!(self, hand)
@@ -480,7 +480,7 @@ impl ShowdownEngine {
         }
     }
 
-    // Don't use this in practice. Only used for consistency checking of the engine
+    /// Don't use this in practice. Only used for consistency checking of the engine
     pub fn process_hand_no_straight_all(&self, hand: &[Card]) -> PotentialHand {
         let hand = ShowdownEngine::make_hand_unique(hand.iter());
         let hands = self.all_possible_hands(&hand, false);
@@ -493,14 +493,13 @@ impl ShowdownEngine {
     pub fn process_hand_no_straight(&self, hand: &[Card]) -> PotentialHand {
         let hand = ShowdownEngine::make_hand_unique(hand.iter());
         let hands = self.potential_hands(&hand, false);
-        // match hands.max_by(|a, b| process_hands!())
         match process_hands!(self, hands) {
             Some(hand) => hand,
             None => PotentialHand::HighCard(self.highest_card(hand))
         }
     }
 
-    // Don't use this in practice. Only used for consistency checking of the engine
+    /// Don't use this in practice. Only used for consistency checking of the engine
     pub fn process_hand_all(&self, hand: &[Card]) -> PotentialHand {
         let hand = ShowdownEngine::make_hand_unique(hand.iter());
         let hands = self.all_possible_hands(&hand, true);
@@ -513,7 +512,6 @@ impl ShowdownEngine {
     pub fn process_hand(&self, hand: &[Card]) -> PotentialHand {
         let hand = ShowdownEngine::make_hand_unique(hand.iter());
         let hands = self.potential_hands(&hand, true);
-        // match hands.max_by(|a, b| process_hands!())
         match process_hands!(self, hands) {
             Some(hand) => hand,
             None => PotentialHand::HighCard(self.highest_card(hand))
@@ -545,10 +543,10 @@ impl ShowdownEngine {
                     }).into_iter().map(|x| (x, StraightDrawType::Complete)).collect();
                 straights
             } else if holes == 1 {
-                // We have exactly 1 hole
+                // We have exactly 1 hole, and it is at the edge
                 let open_ended = x[0].is_empty() || x[4].is_empty();
                 let adjacent_x = x.into_iter().filter(|x| !x.is_empty()).collect::<Vec<_>>();
-                // We know the length of adjacent_x is 3
+                // We know the length of adjacent_x is 4
                 let straight_draws = adjacent_x[3].iter().copied()
                     .map(|ele| vec![*ele].into_iter().collect::<HashSet<Card>>()).collect::<Vec<_>>().into_iter()
                     .flat_map(|set| adjacent_x[2].iter().copied().map(move |ele| set.iter().copied().chain(vec![*ele].into_iter()).collect::<HashSet<_>>() ))
