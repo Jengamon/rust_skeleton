@@ -60,12 +60,6 @@ In my opinion now, Rust is a great language for correctness and dependency, but
 it's compilation speed leaves much to be desired. This hopefully changes in the future,
 but for now, I'm out~
 
-As a side note: Yes, the runner panics a lot, but if I handled those errors,
-I have no idea how I would handle panics in the bot. I know I'm lazy, but panics
-are stupid easy, and you have to handle Results. Maybe I'll rewrite the Runner
-more robustly and only panic if the bot actually returns an Err, but for
-now, this is good enough.
-
 ## Why publish this code?
 
 I just want to show that I *have* been doing *something*, and that I have something to
