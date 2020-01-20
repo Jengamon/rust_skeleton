@@ -21,7 +21,7 @@ This code does use 4 relatively light dependencies:
   - itertools [only required if you want to use the hand calculation engine]
   - log [to replace my very hacky debug_println code]
 
-These compile in a manner of 2-3 seconds, so that should be fun~
+These compile in a manner of seconds, so that should be fun~
 
 ## What happened during the competiton?
 
