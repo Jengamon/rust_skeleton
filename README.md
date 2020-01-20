@@ -89,5 +89,5 @@ Until I mark the major version as 1, `PokerBot` and `Runner` are completely
 allowed to change as I please, but most of the rest of the package should be pretty stable
 as is.
 
-The highest log level I will use is trace, so if you compile to ignore those, you
+The highest log level I plan to use is trace, so if you compile to ignore those, you
 should easily be able to control how much you output.
