@@ -65,3 +65,22 @@ I have no idea how I would handle panics in the bot. I know I'm lazy, but panics
 are stupid easy, and you have to handle Results. Maybe I'll rewrite the Runner
 more robustly and only panic if the bot actually returns an Err, but for
 now, this is good enough.
+
+## Why publish this code?
+
+I just want to show that I *have* been doing *something*, and that I have something to
+show for all the time I spent on the bot, without having to do well in the
+competition. I decided to write in an unsupported language for the competition,
+and hopefully, if anyone else in the future, even myself, wants to compete in a
+future computational poker competition in this language, there is some more
+preexisting code for them to use.
+
+And I needed an excuse to just spend all day writing Rust. I did so. I want to show it~
+
+## How do I actually use this library?
+
+Glad you asked.
+
+First you create something that implements `bot::PokerBot`. Then you pass it to
+the `runner::Runner` along with the address to connect to, and the number of threads
+the ThreadPool is allowed to use. [This is hard-capped at 16. Any higher number will panic.]

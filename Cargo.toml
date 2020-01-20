@@ -1,6 +1,6 @@
 [package]
 name = "rust_skeleton"
-version = "1.0.0"
+version = "0.1.0"
 authors = ["Jengamon <bob.hostern@gmail.com>"]
 edition = "2018"
 license = "MIT"
