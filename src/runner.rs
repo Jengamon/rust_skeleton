@@ -17,6 +17,8 @@ use std::sync::{
 };
 use std::thread;
 use approx::relative_eq;
+use std::error::Error;
+use log::{trace, error};
 
 const CONNECT_TIMEOUT: u64 = 10; // seconds
 const WRITE_TIMEOUT: u64 = 1; // microseconds
@@ -193,7 +195,7 @@ impl Drop for Socket {
 
 impl Runner {
     /// Runs a PokerBot using the Runner
-    pub fn run_bot<TS>(bot: Box<dyn PokerBot + Send + Sync>, addr: TS, thread_count: usize) -> std::io::Result<()> where TS: ToSocketAddrs {
+    pub fn run_bot<TS, E: Error + 'static>(bot: Box<dyn PokerBot<Error=E> + Send + Sync>, addr: TS, thread_count: usize) -> std::io::Result<()> where TS: ToSocketAddrs {
         if let Some(addr) = addr.to_socket_addrs()?.nth(0) {
             let stream = TcpStream::connect_timeout(&addr, Duration::from_secs(CONNECT_TIMEOUT))?;
             stream.set_nodelay(true).expect("set_nodelay call failed");
@@ -253,7 +255,7 @@ impl Runner {
     }
 
     /// Processes actions from the engine and never returns when called
-    fn run(&mut self, bot: Box<dyn PokerBot + Send + Sync>) {
+    fn run<E: Error + 'static>(&mut self, bot: Box<dyn PokerBot<Error=E> + Send + Sync>) {
         let game_state = Arc::new(RwLock::new(GameState {
             bankroll: 0,
             game_clock: 0.0,
@@ -374,7 +376,13 @@ impl Runner {
                                             game_clock: game_state.game_clock,
                                             round_num: game_state.round_num
                                         };
-                                        bot.handle_round_over(&*game_state, &term, player_index_);
+                                        match bot.handle_round_over(&*game_state, &term, player_index_) {
+                                            Ok(_) => {},
+                                            Err(e) => {
+                                                error!(target: "PBRunner", "Bot end round error {}", e);
+                                                return;
+                                            }
+                                        };
                                         *terminal_state = Some(term);
                                         *game_state = GameState {
                                             bankroll: game_state.bankroll,
@@ -399,7 +407,13 @@ impl Runner {
                                         deck: CardDeck(vec![]),
                                         previous: None
                                     };
-                                    bot.handle_new_round(&*game_state, &round, player_index_);
+                                    match bot.handle_new_round(&*game_state, &round, player_index_) {
+                                        Ok(_) => {},
+                                        Err(e) => {
+                                            error!(target: "PBRunner", "Bot start round error {}", e);
+                                            return;
+                                        }
+                                    };
                                     *round_state = Some(round);
                                 },
                                 PreservedOrdering::Reveal(hand) => {
@@ -465,7 +479,15 @@ impl Runner {
                             if !socket.round_sent.load(Ordering::SeqCst) {
                                 socket.round_sent.store(true, Ordering::Relaxed);
                                 let mut bot = Runner::lock_device(&bot, "bot");
-                                let bot_action = bot.get_action(&*game_state, round_state, player_index);
+                                let bot_action = match bot.get_action(&*game_state, round_state, player_index) {
+                                    Ok(action) => action,
+                                    Err(e) => {
+                                        error!(target: "PBRunner", "Bot error {}", e);
+                                        // Try again next time.
+                                        return;
+                                    }
+                                };
+
                                 let legal_actions = round_state.legal_actions();
                                 let action = match bot_action {
                                     Action::Raise(raise) => if (legal_actions & ActionType::RAISE) == ActionType::RAISE {
