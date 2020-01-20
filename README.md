@@ -84,3 +84,10 @@ Glad you asked.
 First you create something that implements `bot::PokerBot`. Then you pass it to
 the `runner::Runner` along with the address to connect to, and the number of threads
 the ThreadPool is allowed to use. [This is hard-capped at 16. Any higher number will panic.]
+
+Until I mark the major version as 1, `PokerBot` and `Runner` are completely
+allowed to change as I please, but most of the rest of the package should be pretty stable
+as is.
+
+The highest log level I will use is trace, so if you compile to ignore those, you
+should easily be able to control how much you output.
