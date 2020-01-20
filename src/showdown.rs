@@ -51,7 +51,7 @@ macro_rules! into_ordering {
         order.into_iter().enumerate().try_fold([CardValue::Two; 13], |mut ordering, (i, val)| match val {
             Ok(val) => { ordering[i] = val; Ok(ordering) },
             Err(e) => Err(e)
-        }).unwrap()
+        })
     }};
 }
 

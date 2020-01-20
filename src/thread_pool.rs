@@ -2,12 +2,14 @@ use std::{fmt, error, thread};
 use std::sync::{mpsc, Arc, Mutex};
 use std::sync::atomic::{AtomicBool, Ordering};
 use std::panic;
+use log::trace;
 
+
+// TODO Allow for reviving workers. Maybe. (a.k.a. panic less)
 pub struct ThreadPool {
     workers: Vec<Worker>,
     sender: mpsc::Sender<Message>,
     flags: Vec<Arc<AtomicBool>>,
-    // receiver: Arc<Mutex<mpsc::Receiver<Message>>>,
 }
 
 struct Worker {
@@ -62,7 +64,7 @@ impl ThreadPool {
                 flags.push(flag);
             }
 
-            Ok(ThreadPool { workers, sender, flags })//, receiver })
+            Ok(ThreadPool { workers, sender, flags })
         } else {
             Err(PoolCreationError::EmptyPool)
         }
@@ -72,15 +74,13 @@ impl ThreadPool {
         // Send the job to the queue
         let new_job: (Box<dyn FnBox + Send + 'static>, _) = (Box::new(f), job_type);
 
-        // If a worker crashes, we should reboot it.
+        // If a worker crashes, crash the system.
         for (i, flag) in self.flags.iter().enumerate() {
             let flag_ = flag.load(Ordering::SeqCst);
             if !flag_ {
-                // self.shutdown();
-                if let Some(thread) = self.workers[i].thread.take() {
+                if let Some(_) = self.workers[i].thread.take() {
                     panic!("[ThreadPool] Worker {} panicked. Killing all workers...", i);
                 }
-                // self.workers[i] = Worker::new(i, Arc::clone(&self.receiver), flag.clone());
             }
         }
 
@@ -109,15 +109,15 @@ impl ThreadPool {
                 count += 1;
                 // If a thread panicked, just print what it panicked with
                 match thread.join() {
-                    Ok(_) => {},//debug_println!("[ThreadPool] Worker {} did not panic", worker.id),
+                    Ok(_) => trace!(target: "PBThreadPool", "Worker {} did not panic", worker.id),
                     // It is possible to panic with a non-Display error,
                     // but Debug is implemented for Any, so use that
-                    Err(_) => {},//debug_println!("[ThreadPool] Worker {} paniced", worker.id)
+                    Err(_) => trace!(target: "PBThreadPool", "Worker {} paniced", worker.id)
                 };
             }
         }
 
-        //debug_println!("[ThreadPool] Shut down {} workers.", count);
+        trace!(target: "PBThreadPool", "Shut down {} workers.", count);
     }
 }
 
@@ -148,12 +148,12 @@ impl Worker {
 
                 match message {
                     Message::NewJob((job, name)) => {
-                        //debug_println!("[Worker] Worker {} received new job of type {}", id, name);
+                        trace!(target: "PBWorker", "Worker {} received new job of type {}", id, name);
 
                         job.call_box();
                     },
                     Message::Terminate => {
-                        //debug_println!("[Worker] Worker {} was told to terminate.", id);
+                        trace!(target: "PBWorker", "Worker {} was told to terminate.", id);
 
                         break;
                     },
