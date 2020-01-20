@@ -91,3 +91,10 @@ as is.
 
 The highest log level I plan to use is trace, so if you compile to ignore those, you
 should easily be able to control how much you output.
+
+## What about the hand calculation engine?
+
+Yup. It's there. It's optional, in case you do have a better solution. It can't calculate
+hand strength, but can select the best hand out of an arbitrary amount of cards, but with tests
+of 2 - 7 cards, it can process hands in a matter of microseconds, which may not be as fast as
+integer comparison (like eval7), but fit my bot's overall game strategy better.S
