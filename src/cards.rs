@@ -199,8 +199,8 @@ impl CardHandExt for Option<CardHand> {
 /// Converts a string into a Vec<Card>
 #[macro_export]
 macro_rules! into_cards {
-    ($t:literal) => ($t.split(",").map(|x| x.parse::<Card>().unwrap()).collect::<Vec<_>>());
-    ($t:expr) =>  ($t.split(",").map(|x| x.parse::<Card>().unwrap()).collect::<Vec<_>>());
+    ($t:literal) => ($t.split(",").map(|x| x.parse::<Card>()).collect::<Vec<_>>());
+    ($t:expr) =>  ($t.split(",").map(|x| x.parse::<Card>()).collect::<Vec<_>>());
 }
 
 /// Describes various errors that can occur in conversion to Card{Suit, Hand} from strings
@@ -226,5 +226,3 @@ impl fmt::Display for CardConversionError {
         }
     }
 }
-
-
